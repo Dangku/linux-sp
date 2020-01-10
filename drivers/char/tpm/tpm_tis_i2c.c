@@ -90,8 +90,6 @@ static int tpm_tis_i2c_ptp_register_mapper(u32 addr, u8 *i2c_reg)
 {
 	*i2c_reg = (u8)(0x000000ff & addr);
 
-	pr_info("%s addr = %x\n", __func__, addr);
-
 	switch (addr) {
 	case TPM_ACCESS(0):
 		*i2c_reg = TPM_LOC_SEL;
@@ -111,8 +109,6 @@ static int tpm_tis_i2c_ptp_register_mapper(u32 addr, u8 *i2c_reg)
 	case TPM_INT_VECTOR(0):
 		return -1;
 	}
-	
-	pr_info("%s i2c_reg = %x\n", __func__, *i2c_reg);
 
 	return 0;
 }
@@ -191,12 +187,10 @@ static int tpm_tis_i2c_read_bytes(struct tpm_tis_data *data, u32 addr,
 		tpm_tis_i2c_sleep_guard_time(phy, TPM_I2C_SEND);
 		ret = i2c_master_send(phy->client, &i2c_reg, 1);
 		mod_timer(&phy->guard_timer, phy->guard_time);
-		pr_info("%s send i2c_reg = %x, i = %d, ret = %d\n", __func__, i2c_reg, i, ret);
 	}
 
 	if (ret < 0)
 	{
-		pr_info("%s reg %x send failed\n", __func__, i2c_reg);
 		sprintf(phy->buf, " read 1 %x\n", phy->guard_time);
 		goto exit;
 	}
@@ -205,11 +199,9 @@ static int tpm_tis_i2c_read_bytes(struct tpm_tis_data *data, u32 addr,
 		tpm_tis_i2c_sleep_guard_time(phy, TPM_I2C_RECV);
 		ret = i2c_master_recv(phy->client, result, size);
 		mod_timer(&phy->guard_timer, phy->guard_time);
-		pr_info("%s receive size = %d, result = %x, i = %d, ret = %d\n", __func__, size, *result, i, ret);
 	}
 	if (ret < 0)
 	{
-		pr_info("%s reg %x receive failed\n", __func__, i2c_reg);
 		sprintf(phy->buf, " read 2 %x\n", phy->guard_time);
 		goto exit;
 	}
@@ -425,16 +417,11 @@ static int tpm_tis_i2c_probe(struct i2c_client *client,
 			     const struct i2c_device_id *id)
 {
 	struct tpm_tis_i2c_phy *phy;
-	int ret;
-
-	pr_info("%s start\n", __func__);
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
 		dev_err(&client->dev, "client not i2c capable\n");
 		return -ENODEV;
 	}
-
-	pr_info("%s i2c check successsful\n", __func__);
 
 	phy = devm_kzalloc(&client->dev, sizeof(struct tpm_tis_i2c_phy),
 			   GFP_KERNEL);
@@ -462,16 +449,13 @@ static int tpm_tis_i2c_probe(struct i2c_client *client,
 	phy->guard_timer.data = (unsigned long)phy;
 	phy->guard_timer.function = tpm_tis_i2c_guard_time_timeout;
 #else
-	//phy->guard_timer.function = tpm_tis_i2c_guard_time_timeout;
+	phy->guard_timer.function = tpm_tis_i2c_guard_time_timeout;
 	timer_setup(&phy->guard_timer, tpm_tis_i2c_guard_time_timeout, 0);
 #endif
 
-	ret = tpm_tis_core_init(&client->dev, &phy->priv, -1, &tpm_tis,
-				 NULL);
-
-	pr_info("%s end\n", __func__);
 	
-	return ret;
+	return tpm_tis_core_init(&client->dev, &phy->priv, -1, &tpm_tis,
+				 NULL);
 
 
 }

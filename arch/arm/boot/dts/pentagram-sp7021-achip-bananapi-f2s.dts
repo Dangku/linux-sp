@@ -48,7 +48,7 @@
 
 		mipicsi0: mipicsirx@0x9C005280 {
                         i2c-id = <1>;
-			status = "okay";
+			status = "disabled";
                 };
 
 		l2sw: l2sw@0x9c108000 {
@@ -69,17 +69,8 @@
         };
 };
 
-&i2cm0 {
-	clock-frequency = <400000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pins_i2cm0>;
-	#address-cells = <1>;
-	#size-cells = <0>;
-	status = "okay";
-};
 
 &i2cm1 {
-	clock-frequency = <400000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2cm1_tpm_pins>;
 	#address-cells = <1>;
@@ -100,13 +91,6 @@
 };
 
 &pctl {
-
-	pins_i2cm0: pins_i2cm0 {
-                sppctl,pins = <
-			SP7021_IOPAD(12,SP7021_PCTL_G_PMUX,MUXF_I2CM0_DAT,0)
-			SP7021_IOPAD(13,SP7021_PCTL_G_PMUX,MUXF_I2CM0_CK,0)
-                >;
-        };
 
 	pins_uart2: pins_uart2 {
 		sppctl,pins = <

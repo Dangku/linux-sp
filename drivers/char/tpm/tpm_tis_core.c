@@ -108,21 +108,14 @@ static int wait_startup(struct tpm_chip *chip, int l)
 		int rc;
 		u8 access;
 
-		pr_info("%s ...\n", __func__);
-
 		rc = tpm_tis_read8(priv, TPM_ACCESS(l), &access);
 		if (rc < 0)
 			return rc;
 
-		if (access & TPM_ACCESS_VALID){
-			pr_info("%s successful\n", __func__);
+		if (access & TPM_ACCESS_VALID)
 			return 0;
-		}
 		tpm_msleep(TPM_TIMEOUT);
 	} while (time_before(jiffies, stop));
-
-	pr_info("%s timeout\n", __func__);
-	
 	return -1;
 }
 
@@ -780,8 +773,6 @@ void tpm_tis_remove(struct tpm_chip *chip)
 	u32 interrupt;
 	int rc;
 
-	pr_info("%s\n", __func__);
-
 	tpm_tis_clkrun_enable(chip, true);
 
 	rc = tpm_tis_read32(priv, reg, &interrupt);
@@ -876,8 +867,6 @@ int tpm_tis_core_init(struct device *dev, struct tpm_tis_data *priv, int irq,
 	int rc, probe;
 	struct tpm_chip *chip;
 
-	pr_info("%s\n", __func__);
-
 	chip = tpmm_chip_alloc(dev, &tpm_tis);
 	if (IS_ERR(chip))
 		return PTR_ERR(chip);
@@ -915,7 +904,6 @@ int tpm_tis_core_init(struct device *dev, struct tpm_tis_data *priv, int irq,
 
 	if (wait_startup(chip, 0) != 0) {
 		rc = -ENODEV;
-		pr_info("%s chip startup failed\n", __func__);
 		goto out_err;
 	}
 
@@ -924,21 +912,15 @@ int tpm_tis_core_init(struct device *dev, struct tpm_tis_data *priv, int irq,
 	if (rc < 0)
 		goto out_err;
 
-	pr_info("%s read32 TPM_INT_ENABLE is %x\n", __func__, intmask);
-
 	intmask |= TPM_INTF_CMD_READY_INT | TPM_INTF_LOCALITY_CHANGE_INT |
 		   TPM_INTF_DATA_AVAIL_INT | TPM_INTF_STS_VALID_INT;
 	intmask &= ~TPM_GLOBAL_INT_ENABLE;
 	tpm_tis_write32(priv, TPM_INT_ENABLE(priv->locality), intmask);
 
-	pr_info("%s write32 TPM_INT_ENABLE end\n", __func__);
-
 	rc = tpm2_probe(chip);
 	if (rc)
 		goto out_err;
 
-	pr_info("%s tpm2_probe successful\n", __func__);
-	
 	rc = tpm_tis_read32(priv, TPM_DID_VID(0), &vendor);
 	if (rc < 0)
 		goto out_err;
