@@ -80,7 +80,7 @@
 	st33htpi: st33htpi@0{
 		compatible = "st,st33htpm-i2c";
 		reg = <0x2e>;
-		status="okay";
+		status="disabled";
 	};
 };
 
